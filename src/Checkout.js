@@ -1,9 +1,8 @@
 import React from 'react'
-import Header from './Header'
 import './styles.css'
-import { Link } from 'react-router-dom'
 import axios from 'axios'
-import qs from 'qs'
+import Header from './Header'
+import { Link } from 'react-router-dom'
 
 
 class Checkout extends React.Component {
@@ -17,15 +16,42 @@ class Checkout extends React.Component {
             state: "",
             city:"",
             country:"",
-            amount:''
+            amount:'',
+            merchantRefNum:'',
+            customerId:''
         }
     }
+
+
+    getCustomerId=(email)=>{
+        
+        axios.post('http://localhost:8080/payment/getCustomerId',{email:email})
+        .then((result)=>{
+            if(result['data']['customerId']!=''){
+                this.setState({
+                    customerId:result['data']['customerId']
+                })
+            }
+        })
+        .catch((err)=>console.log(err))
+
+    }
+
+
     componentDidMount=()=>{
         this.setState({
             amount:this.props.match.params.id
         })
+        
+        this.getCustomerId();
     }
 
+    generateMerchantREfNum=()=>{
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        }) 
+    }
 
     handleChange=(event)=>{
         this.setState({
@@ -40,8 +66,9 @@ class Checkout extends React.Component {
        let lastName=this.state.lastname
        let email=this.state.email
         
-    
         window.paysafe.checkout.setup("cHVibGljLTc3NTE6Qi1xYTItMC01ZjAzMWNiZS0wLTMwMmQwMjE1MDA4OTBlZjI2MjI5NjU2M2FjY2QxY2I0YWFiNzkwMzIzZDJmZDU3MGQzMDIxNDUxMGJjZGFjZGFhNGYwM2Y1OTQ3N2VlZjEzZjJhZjVhZDEzZTMwNDQ=", {
+            "customerId": this.state.customerId,
+            "merchantRefNum":this.generateMerchantREfNum(),
             "currency": "USD",
             "amount": parseInt(this.state.amount),
             "locale": "en_US",
@@ -113,7 +140,7 @@ class Checkout extends React.Component {
                         instance.showSuccessScreen('Payment SUCCESSFULL')
                     }
                     else{
-                        instance.showFailureScreen('Payment was declied .Try again with same or another payment method')
+                         instance.showFailureScreen('Payment was declied .Try again with same or another payment method')
                     }
                     setTimeout(window.location.replace('/'),5000);
                 })

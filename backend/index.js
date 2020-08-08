@@ -22,10 +22,7 @@ app.use(bodyParser.urlencoded({extended:true}))
 const paymentRoute=require('./routes/payment')
 
 
-
 app.use('/payment',paymentRoute);
-
-
 
 
 app.listen(port,()=>{console.log('SERVER IS RUNNIG')})
